@@ -1,11 +1,48 @@
 
     const express = require('express');
     const app = express();
+    const bcrypt = require('bcrypt');
+    const _ = require('underscore');
 
     const Usuario = require('../models/usuario');
     
     app.get('/usuario', function (req, res) {
-        res.json('get usuario');
+
+        let estadoTrue = {
+            estado: true
+        }
+
+        let desde = req.query.desde || 0;
+        desde = Number(desde);
+
+        let limite = req.query.limite || 5;
+        limite = Number(limite);
+
+        Usuario.find( estadoTrue, 'nombre email role estado google img')
+                .skip(desde)
+                .limit(limite)
+                .exec((err, usuarios) => { 
+            
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err
+                });
+
+            }
+
+            Usuario.countDocuments( estadoTrue, (err, conteo) => {
+                
+                res.json({
+                    ok: true,
+                    usuarios,
+                    cuantos: conteo
+                });
+
+            });
+
+
+        });
     });
 
     
@@ -17,9 +54,10 @@
         let usuario = new Usuario({
             nombre: body.nombre,
             email: body.email,
-            password: body.password,
+            password: bcrypt.hashSync(body.password, 10),
             role: body.role
         });
+
 
         usuario.save((err, usuarioDB) => {
 
@@ -27,44 +65,88 @@
                 return res.status(400).json({
                     ok: false,
                     err
-                })
+                });
+
             } else{
+
+                // usuarioDB.password = null;
+
                 res.json({
                     ok: true,
                     usuario: usuarioDB
-                })
+                });
             }
 
         });
-
-
-
-
-        if (body.nombre === undefined) {
-
-            res.status(400).json(
-                {
-                    ok: false,
-                    mensaje: 'El nombre es necesario'
-                });
-
-        } else {
-            res.json(
-                {
-                    persona: body
-                });
-        }
     });
 
 
     app.put('/usuario/:id', function (req, res) {
+        
         let id = req.params.id;
-        res.json(`Put usuario ${id}`);
+        let body = _.pick( req.body, ['nombre',
+                                      'email',
+                                      'img',
+                                      'role',
+                                      'estado']);
+                
+        
+        Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true, useFindAndModify: false },(err, usuarioDB) => {
+            
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            console.log(body);
+            
+
+            res.json({
+                ok: true,
+                usuario: usuarioDB
+            });
+
+        });
+
     });
 
 
-    app.delete('/usuario', function (req, res) {
-        res.json('Delete Usuario');
+    app.delete('/usuario/:id', function (req, res) {
+
+        let id = req.params.id;    
+        
+        let actualizaEstado = {
+            estado: false
+        };
+
+        Usuario.findByIdAndUpdate(id, actualizaEstado,{ new: true, useFindAndModify: false }, (err, usuarioBorrado) => {
+
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            if (!usuarioBorrado) {
+                return res.status(400).json({
+                    ok: false,
+                    err: {
+                            message: 'usuario no encontrado'
+                    }
+                })
+            }
+
+            res.json({
+                ok: true,
+                usuario: usuarioBorrado
+            });
+
+        });
+
+
     });
 
     module.exports = app;
