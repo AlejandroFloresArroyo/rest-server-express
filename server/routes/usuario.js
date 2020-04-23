@@ -91,7 +91,7 @@
                                       'estado']);
                 
         
-        Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true, useFindAndModify: false },(err, usuarioDB) => {
+        Usuario.findByIdAndUpdate(id, body, { new: true, useFindAndModify: false },(err, usuarioDB) => {
             
             if (err) {
                 return res.status(400).json({
