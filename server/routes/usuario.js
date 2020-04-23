@@ -3,10 +3,10 @@
     const app = express();
     const bcrypt = require('bcrypt');
     const _ = require('underscore');
-
     const Usuario = require('../models/usuario');
+    const { verificaToken, verificaUserRole } = require('../middlewares/auth')
     
-    app.get('/usuario', function (req, res) {
+    app.get('/usuario', verificaToken , (req, res) => {
 
         let estadoTrue = {
             estado: true
@@ -46,7 +46,7 @@
     });
 
     
-    app.post('/usuario', function (req, res) {
+    app.post('/usuario', [verificaToken, verificaUserRole] ,(req, res) => {
                                           
         let body = req.body;
 
@@ -81,7 +81,7 @@
     });
 
 
-    app.put('/usuario/:id', function (req, res) {
+    app.put('/usuario/:id', [verificaToken, verificaUserRole] , (req, res) => {
         
         let id = req.params.id;
         let body = _.pick( req.body, ['nombre',
@@ -91,7 +91,7 @@
                                       'estado']);
                 
         
-        Usuario.findByIdAndUpdate(id, body, { new: true, useFindAndModify: false },(err, usuarioDB) => {
+        Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true ,useFindAndModify: false, context: 'query' },(err, usuarioDB) => {
             
             if (err) {
                 return res.status(400).json({
@@ -113,7 +113,7 @@
     });
 
 
-    app.delete('/usuario/:id', function (req, res) {
+    app.delete('/usuario/:id', [verificaToken, verificaUserRole] , (req, res) => {
 
         let id = req.params.id;    
         
