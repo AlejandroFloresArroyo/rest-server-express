@@ -17,7 +17,7 @@ app.post('/login', (req, res) => {
             return res.status(500).json({
                 ok: false,
                 err
-            })
+            });
         }
 
         if (!usuarioDB) {
@@ -28,7 +28,6 @@ app.post('/login', (req, res) => {
                 }
             });
         }
-
 
         if(!bcrypt.compareSync(body.password, usuarioDB.password)){
             return res.status(400).json({
@@ -51,7 +50,7 @@ app.post('/login', (req, res) => {
 
     });
 
-})
+});
 
 
 module.exports = app;

@@ -8,6 +8,7 @@
     
     app.get('/usuario', verificaToken , (req, res) => {
 
+
         let estadoTrue = {
             estado: true
         }
