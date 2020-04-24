@@ -33,6 +33,9 @@ process.env.CADUCIDAD_TOKEN = 60*60*24*30;
 
 process.env.SEED = process.env.SEED || 'este-es-el-seed-desarrollo';
 
+//google client id
+
+process.env.CLIENT_ID = process.env.CLIENT_ID || '458077065665-3pkdl69fn9hv24ue7l90q5r6hf08hl3a.apps.googleusercontent.com';
 
 // mongodb: //mongodb://localhost:27017/cafe
 
