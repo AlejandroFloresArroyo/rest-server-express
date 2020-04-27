@@ -32,7 +32,7 @@ app.get('/categoria', verificaToken, (req, res) => {
                     });
 
                 });
-});
+            });
 
 
 // Muestra la categoría por ID
@@ -177,8 +177,5 @@ app.delete('/categoria/:id', [verificaToken, verificaUserRole], (req, res) => {
         });
     });
 });
-
-
-
 
 module.exports = app;
