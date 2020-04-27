@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 
 const Usuario = require('../models/usuario');
+const Producto = require('../models/producto');
+
 
 app.use( fileUpload({ useTempFiles: true, 
     tempFileDir: 'tmp/',
@@ -33,9 +35,6 @@ app.put('/upload/:tipo/:id', (req, res) => {
         });
     }
 
-    Usuario.findById(id, (err, usuarioDB) => {});
-
-
     //============
     // Validar tipo
     //============
@@ -51,13 +50,6 @@ app.put('/upload/:tipo/:id', (req, res) => {
             }
         });
     }
-
-
-    //============
-    // Valida registro
-    //============
-
-
 
 
     //============
@@ -91,7 +83,6 @@ app.put('/upload/:tipo/:id', (req, res) => {
     // Cambio de nombre del archivo
     //============
 
-
     let nombreArchivo = `${id}-${new Date().getDate()}-${new Date().getMonth()}-${new Date().getFullYear()}-${new Date().getTime()}.${extension}`
 
 
@@ -112,12 +103,24 @@ app.put('/upload/:tipo/:id', (req, res) => {
         //============
         // Imagen cargada
         //============
-
-        imagenUsuario(id, res, nombreArchivo);
+        if (tipo === 'usuarios') {
+            
+            imagenUsuario(id, res, nombreArchivo);
+        } else if (tipo === 'productos') {
+            
+            imagenProducto(id, res, nombreArchivo);
+        }
+        else{
+            console.log("Sepa");
+            
+        }
     });
 
 });
 
+//============
+// Validaciones de la imagen de usuario
+//============
 
 const imagenUsuario = (id, res, nombreArchivo) => {
 
@@ -171,18 +174,75 @@ const imagenUsuario = (id, res, nombreArchivo) => {
 
 };
 
+//============
+// Validaciones de la imagen de producto
+//============
 
-const imagenProducto = () => {
+const imagenProducto = (id, res, nombreArchivo) => {
+    Producto.findById(id, (err, productoDB) => {
+        if (err) {
 
+            borraCarpetaIdInvalido(id, 'productos');
+
+            return res.status(500).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!productoDB) {
+
+            borraCarpetaIdInvalido(id, 'productos');
+
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'El producto no existe'
+                }
+            });
+        }
+
+        if (productoDB.img) {
+            borraArchivo(id, productoDB.img, 'productos');
+        }
+
+
+        productoDB.img = nombreArchivo;
+
+        productoDB.save((err, productoGuardado) => {
+
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            res.json({
+                ok: true,
+                producto: productoGuardado,
+                img: nombreArchivo
+            });
+        })
+
+    });
 };
 
+//============
+// Borra recursivamente la carpeta si hay un error
+//============
 const borraCarpetaIdInvalido = (id, tipo) => {
+
     let pathImg = path.resolve(__dirname, `../../uploads/${tipo}/${id}`); 
 
         if (fs.existsSync(pathImg)){
             fs.rmdirSync (pathImg,  { recursive: true });
         }
 }
+
+//============
+// Borra el archivo si ya existia uno en la db
+//============
 
 const borraArchivo = (id, nombreImagen, tipo ) => {
     let pathImg = path.resolve(__dirname, `../../uploads/${tipo}/${id}/${nombreImagen}`); 
