@@ -106,7 +106,7 @@ app.get('/producto/buscar/:term', verificaToken, (req, res) => {
                 });
             }
 
-            // if (productos) {
+            // if (!productos) {
             //     return res.status(400).json({
             //         ok: false,
             //         err: {
