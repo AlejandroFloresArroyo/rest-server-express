@@ -85,6 +85,44 @@ app.get('/producto/:id', verificaToken, (req, res) => {
 });
     
 
+//============
+// Buscar productos
+//============
+
+app.get('/producto/buscar/:term', verificaToken, (req, res) => {
+    
+    let term = req.params.term;
+
+    let regex = new RegExp(term, 'i');
+
+    Producto.find({ nombre : regex,
+                    disponible: true })
+        .populate('categoria', 'nombre')
+        .exec((err, productos) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    err
+                });
+            }
+
+            // if (productos) {
+            //     return res.status(400).json({
+            //         ok: false,
+            //         err: {
+            //             message: `No se han encontrado productos similares a ${term}`
+            //         }
+            //     });
+            // }
+
+            res.json({
+                ok: true,
+                productos
+            })
+
+        });
+});
+
 // Crea un producto, hay que registrar que usuario lo mando y una categoría del listado
 app.post('/producto', verificaToken,(req, res) => {
     

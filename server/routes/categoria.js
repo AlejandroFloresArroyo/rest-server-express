@@ -70,6 +70,8 @@ app.get('/categoria/:id', verificaToken, (req, res) => {
 });
 
 
+
+
 // Crea una nueva categoría y la regresa
 app.post('/categoria', verificaToken, (req, res) => {
 
